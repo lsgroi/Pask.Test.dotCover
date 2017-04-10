@@ -1,0 +1,40 @@
+# configuration for "master" branch
+# build, test and push to NuGet
+-
+  branches:
+    only:
+      - master
+  init:
+    - git config --global core.autocrlf true
+  image: Visual Studio 2017
+  skip_tags: true
+  version: '{build}'
+  environment:
+    NuGetApiKey:
+      secure: zA+kpGYRXyC/b/zfaoeGec4jTl+Ahc6hLbIeOoZL2hPjp/3M5jPhyD8awfjU5s+6
+    GitHubToken:
+      secure: I74wB8tW0coqem3AUmm4Vlo0GZjcm7wq0+yLC9NygN+HDHwBUNWNuhg94hZz3IKl
+  build_script:
+    - ps: .\Pask.ps1 Release
+  artifacts:
+    - path: .build\output\*.nupkg
+  deploy: off
+  test: off
+
+# configuration for branches
+# build and test
+-
+  branches:
+    except:
+      - master
+  image: Visual Studio 2017
+  init:
+    - git config --global core.autocrlf true
+  skip_tags: true
+  version: '{build}'
+  build_script:
+    - ps: .\Pask.ps1 PreRelease
+  artifacts:
+    - path: .build\output\*.nupkg
+  deploy: off
+  test: off
