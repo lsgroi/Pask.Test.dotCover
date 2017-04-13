@@ -4,6 +4,7 @@ Set-Property dotCoverReportType -Default @("HTML","XML")
 # Synopsis: Merge dotCover snapshops found in the tests results directory and generate a report
 Task New-dotCoverReport {
     if (-not $TestsResultsFullPath -or -not (Test-Path $TestsResultsFullPath)) {
+        Write-BuildMessage "tests results directory not found" -ForegroundColor "Yellow"
         return;
     }
 
@@ -28,6 +29,6 @@ Task New-dotCoverReport {
 		    Exec { & "$dotCover" report /Source="$MergedSnapshot" /Output="$dotCoverReport" /ReportType="$_" }
         }
     } else {
-        Write-Build "Yellow" "dotCover snapshots not found"
+        Write-BuildMessage "dotCover snapshots not found" -ForegroundColor "Yellow"
     }
 }
