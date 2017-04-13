@@ -1,4 +1,5 @@
-Import-Script Pask.Test -Package Pask.Test
+Import-Task Test-MSpec -Package Pask.Test
+Import-Script Pask.Test.dotCover, Properties.dotCoverFilters -Package Pask.Test.dotCover
 
 Set-Property NUnitTestSelection -Default ""
 
@@ -11,12 +12,20 @@ Task Test-NUnit {
         $NUnitTestsResults = Join-Path $TestsResultsFullPath "NUnit.xml"
         
         if ($NUnitTestSelection) { 
-            $Where = @("--where", $NUnitTestSelection) 
+            $Where = "--where:`"`"$NUnitTestSelection`"`""
         }
 
         New-Directory $TestsResultsFullPath | Out-Null
 
-        Exec { & "$NUnit" --work:"$TestsResultsFullPath" --result:"$NUnitTestsResults" $Where --noheader $Assemblies }
+        $dotCover = Get-dotCoverExe
+        $dotCoverOutput = Join-Path $TestsResultsFullPath "NUnit.dotCover.Snapshot.dcvr"
+        $dotCoverScope = Get-dotCoverScope $Assemblies
+        Remove-ItemSilently $dotCoverOutput
+
+        $NUnitAssemblies = $Assemblies -join "`"`" `"`""
+        $NUnitArguments = "--work:`"`"$TestsResultsFullPath`"`" --result:`"`"$NUnitTestsResults`"`" $Where --noheader `"`"$NUnitAssemblies`"`""
+
+        Exec { & "$dotCover" cover /TargetExecutable="$NUnit" /TargetArguments="$NUnitArguments" /Output="$dotCoverOutput" /Scope="$dotCoverScope" /Filters="`"$dotCoverFilters`"" /AttributeFilters="`"$dotCoverAttributeFilters`"" /ReturnTargetExitCode }
     } else {
         Write-BuildMessage "NUnit tests not found" -ForegroundColor "Yellow"
     }

@@ -68,6 +68,78 @@ Describe "Test-MSpec" {
         }
     }
 
+    Context "All tests with dotCover filters" {
+        BeforeAll {
+            # Act
+            Invoke-Pask $TestSolutionFullPath -Task Restore-NuGetPackages, Clean, Build, Test-MSpec, New-dotCoverReport -dotCoverReportType "XML" -dotCoverFilters "-:function=Method3"
+        }
+
+        It "creates the MSpec XML report" {
+            Join-Path $TestSolutionFullPath ".build\output\TestsResults\MSpec.xml" | Should Exist
+        }
+
+        It "creates the MSpec dotCover snapshot" {
+            Join-Path $TestSolutionFullPath ".build\output\TestsResults\MSpec.dotCover.Snapshot.dcvr" | Should Exist
+        }
+
+        It "creates the merged dotCover snapshot" {
+            Join-Path $TestSolutionFullPath ".build\output\TestsResults\dotCover.Snapshot.dcvr" | Should Exist
+        }
+
+        It "creates the dotCover report" {
+            $dotCoverReport = Join-Path $TestSolutionFullPath ".build\output\TestsResults\dotCover.Report.xml"
+            $dotCoverReport | Should Exist
+            [xml]$dotCoverReportXml = Get-Content $dotCoverReport
+            $Class = $dotCoverReportXml.Root.Assembly.Namespace.Type | Where { $_.Name -eq "Class" }
+            $Class.Method | Measure | Select -ExpandProperty Count | Should Be 1
+            $Class.Method.Name | Should Be "Method2():bool"
+        }
+
+        It "runs all the tests" {
+            [xml]$MSpecResult = Get-Content (Join-Path $TestSolutionFullPath ".build\output\TestsResults\MSpec.xml")
+            $MSpecResult.MSpec.assembly.concern.context | Measure | select -ExpandProperty Count | Should Be 4
+            $MSpecResult.MSpec.assembly.concern.context.name | Where { $_ -eq "StringSpec"} | Measure | select -ExpandProperty Count | Should Be 2
+            $MSpecResult.MSpec.assembly.concern.context.name | Where { $_ -eq "IntSpec"} | Measure | select -ExpandProperty Count | Should Be 1
+            $MSpecResult.MSpec.assembly.concern.context.name | Where { $_ -eq "ObjectSpec"} | Measure | select -ExpandProperty Count | Should Be 1
+        }
+    }
+
+    Context "All tests with dotCover attribute filters" {
+        BeforeAll {
+            # Act
+            Invoke-Pask $TestSolutionFullPath -Task Restore-NuGetPackages, Clean, Build, Test-MSpec, New-dotCoverReport -dotCoverReportType "XML" -dotCoverAttributeFilters "ClassLibrary.CustomExcludeFromCodeCoverageAttribute"
+        }
+
+        It "creates the MSpec XML report" {
+            Join-Path $TestSolutionFullPath ".build\output\TestsResults\MSpec.xml" | Should Exist
+        }
+
+        It "creates the MSpec dotCover snapshot" {
+            Join-Path $TestSolutionFullPath ".build\output\TestsResults\MSpec.dotCover.Snapshot.dcvr" | Should Exist
+        }
+
+        It "creates the merged dotCover snapshot" {
+            Join-Path $TestSolutionFullPath ".build\output\TestsResults\dotCover.Snapshot.dcvr" | Should Exist
+        }
+
+        It "creates the dotCover report" {
+            $dotCoverReport = Join-Path $TestSolutionFullPath ".build\output\TestsResults\dotCover.Report.xml"
+            $dotCoverReport | Should Exist
+            [xml]$dotCoverReportXml = Get-Content $dotCoverReport
+            $Class = $dotCoverReportXml.Root.Assembly.Namespace.Type | Where { $_.Name -eq "Class" }
+            $Class.Method | Measure | Select -ExpandProperty Count | Should Be 1
+            $Class.Method.Name | Should Be "Method3():bool"
+        }
+
+        It "runs all the tests" {
+            [xml]$MSpecResult = Get-Content (Join-Path $TestSolutionFullPath ".build\output\TestsResults\MSpec.xml")
+            $MSpecResult.MSpec.assembly.concern.context | Measure | select -ExpandProperty Count | Should Be 4
+            $MSpecResult.MSpec.assembly.concern.context.name | Where { $_ -eq "StringSpec"} | Measure | select -ExpandProperty Count | Should Be 2
+            $MSpecResult.MSpec.assembly.concern.context.name | Where { $_ -eq "IntSpec"} | Measure | select -ExpandProperty Count | Should Be 1
+            $MSpecResult.MSpec.assembly.concern.context.name | Where { $_ -eq "ObjectSpec"} | Measure | select -ExpandProperty Count | Should Be 1
+        }
+    }
+
     Context "Tests with tags" {
         BeforeAll {
             # Act
@@ -108,78 +180,6 @@ Describe "Test-MSpec" {
             [xml]$MSpecResult = Get-Content (Join-Path $TestSolutionFullPath ".build\output\TestsResults\MSpec.xml")
             $MSpecResult.MSpec.assembly.concern.context | Measure | select -ExpandProperty Count | Should Be 3
             $MSpecResult.MSpec.assembly.concern.context.name | Where { $_ -eq "StringSpec"} | Measure | select -ExpandProperty Count | Should Be 2
-            $MSpecResult.MSpec.assembly.concern.context.name | Where { $_ -eq "ObjectSpec"} | Measure | select -ExpandProperty Count | Should Be 1
-        }
-    }
-
-    Context "dotCover filters" {
-        BeforeAll {
-            # Act
-            Invoke-Pask $TestSolutionFullPath -Task Restore-NuGetPackages, Clean, Build, Test-MSpec, New-dotCoverReport -dotCoverReportType "XML" -dotCoverFilters "-:function=Method3"
-        }
-
-        It "creates the MSpec XML report" {
-            Join-Path $TestSolutionFullPath ".build\output\TestsResults\MSpec.xml" | Should Exist
-        }
-
-        It "creates the MSpec dotCover snapshot" {
-            Join-Path $TestSolutionFullPath ".build\output\TestsResults\MSpec.dotCover.Snapshot.dcvr" | Should Exist
-        }
-
-        It "creates the merged dotCover snapshot" {
-            Join-Path $TestSolutionFullPath ".build\output\TestsResults\dotCover.Snapshot.dcvr" | Should Exist
-        }
-
-        It "creates the dotCover report" {
-            $dotCoverReport = Join-Path $TestSolutionFullPath ".build\output\TestsResults\dotCover.Report.xml"
-            $dotCoverReport | Should Exist
-            [xml]$dotCoverReportXml = Get-Content $dotCoverReport
-            $Class = $dotCoverReportXml.Root.Assembly.Namespace.Type | Where { $_.Name -eq "Class" }
-            $Class.Method | Measure | Select -ExpandProperty Count | Should Be 1
-            $Class.Method.Name | Should Be "Method2():bool"
-        }
-
-        It "runs all the tests" {
-            [xml]$MSpecResult = Get-Content (Join-Path $TestSolutionFullPath ".build\output\TestsResults\MSpec.xml")
-            $MSpecResult.MSpec.assembly.concern.context | Measure | select -ExpandProperty Count | Should Be 4
-            $MSpecResult.MSpec.assembly.concern.context.name | Where { $_ -eq "StringSpec"} | Measure | select -ExpandProperty Count | Should Be 2
-            $MSpecResult.MSpec.assembly.concern.context.name | Where { $_ -eq "IntSpec"} | Measure | select -ExpandProperty Count | Should Be 1
-            $MSpecResult.MSpec.assembly.concern.context.name | Where { $_ -eq "ObjectSpec"} | Measure | select -ExpandProperty Count | Should Be 1
-        }
-    }
-
-    Context "dotCover attribute filters" {
-        BeforeAll {
-            # Act
-            Invoke-Pask $TestSolutionFullPath -Task Restore-NuGetPackages, Clean, Build, Test-MSpec, New-dotCoverReport -dotCoverReportType "XML" -dotCoverAttributeFilters "ClassLibrary.CustomExcludeFromCodeCoverageAttribute"
-        }
-
-        It "creates the MSpec XML report" {
-            Join-Path $TestSolutionFullPath ".build\output\TestsResults\MSpec.xml" | Should Exist
-        }
-
-        It "creates the MSpec dotCover snapshot" {
-            Join-Path $TestSolutionFullPath ".build\output\TestsResults\MSpec.dotCover.Snapshot.dcvr" | Should Exist
-        }
-
-        It "creates the merged dotCover snapshot" {
-            Join-Path $TestSolutionFullPath ".build\output\TestsResults\dotCover.Snapshot.dcvr" | Should Exist
-        }
-
-        It "creates the dotCover report" {
-            $dotCoverReport = Join-Path $TestSolutionFullPath ".build\output\TestsResults\dotCover.Report.xml"
-            $dotCoverReport | Should Exist
-            [xml]$dotCoverReportXml = Get-Content $dotCoverReport
-            $Class = $dotCoverReportXml.Root.Assembly.Namespace.Type | Where { $_.Name -eq "Class" }
-            $Class.Method | Measure | Select -ExpandProperty Count | Should Be 1
-            $Class.Method.Name | Should Be "Method3():bool"
-        }
-
-        It "runs all the tests" {
-            [xml]$MSpecResult = Get-Content (Join-Path $TestSolutionFullPath ".build\output\TestsResults\MSpec.xml")
-            $MSpecResult.MSpec.assembly.concern.context | Measure | select -ExpandProperty Count | Should Be 4
-            $MSpecResult.MSpec.assembly.concern.context.name | Where { $_ -eq "StringSpec"} | Measure | select -ExpandProperty Count | Should Be 2
-            $MSpecResult.MSpec.assembly.concern.context.name | Where { $_ -eq "IntSpec"} | Measure | select -ExpandProperty Count | Should Be 1
             $MSpecResult.MSpec.assembly.concern.context.name | Where { $_ -eq "ObjectSpec"} | Measure | select -ExpandProperty Count | Should Be 1
         }
     }
