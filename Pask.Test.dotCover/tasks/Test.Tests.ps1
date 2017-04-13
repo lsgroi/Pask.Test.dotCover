@@ -43,4 +43,58 @@ Describe "Test" {
             $NUnitResult.'test-run'.total | Should Be 4
         }
     }
+
+    Context "All tests from tests artifact" {
+        BeforeAll {
+            # Act
+            Invoke-Pask $TestSolutionFullPath -Task Restore-NuGetPackages, Clean, Build, New-TestsArtifact
+            (Join-Path $TestSolutionFullPath "**\bin"), (Join-Path $TestSolutionFullPath "**\obj") | Remove-ItemSilently
+            Invoke-Pask $TestSolutionFullPath -Task Test
+        }
+
+        It "creates the MSpec XML report" {
+            Join-Path $TestSolutionFullPath ".build\output\TestsResults\MSpec.xml" | Should Exist
+        }
+
+        It "creates the NUnit XML report" {
+            Join-Path $TestSolutionFullPath ".build\output\TestsResults\NUnit.xml" | Should Exist
+        }
+
+        It "runs all MSpec tests" {
+            [xml]$MSpecResult = Get-Content (Join-Path $TestSolutionFullPath ".build\output\TestsResults\MSpec.xml")
+            $MSpecResult.MSpec.assembly.concern.context | Measure | select -ExpandProperty Count | Should Be 4
+        }
+
+        It "runs all NUnit tests" {
+            [xml]$NUnitResult = Get-Content (Join-Path $TestSolutionFullPath ".build\output\TestsResults\NUnit.xml")
+            $NUnitResult.'test-run'.total | Should Be 4
+        }
+    }
+
+    Context "Filtered tests from tests artifact" {
+        BeforeAll {
+            # Act
+            Invoke-Pask $TestSolutionFullPath -Task Restore-NuGetPackages, Clean, Build, New-TestsArtifact
+            (Join-Path $TestSolutionFullPath "**\bin"), (Join-Path $TestSolutionFullPath "**\obj") | Remove-ItemSilently
+            Invoke-Pask $TestSolutionFullPath -Task Test -TestNameArtifactPattern "UnitTests?$"
+        }
+
+        It "creates the MSpec XML report" {
+            Join-Path $TestSolutionFullPath ".build\output\TestsResults\MSpec.xml" | Should Exist
+        }
+
+        It "creates the NUnit XML report" {
+            Join-Path $TestSolutionFullPath ".build\output\TestsResults\NUnit.xml" | Should Exist
+        }
+
+        It "runs the MSpec tests" {
+            [xml]$MSpecResult = Get-Content (Join-Path $TestSolutionFullPath ".build\output\TestsResults\MSpec.xml")
+            $MSpecResult.MSpec.assembly.concern.context | Measure | select -ExpandProperty Count | Should Be 3
+        }
+
+        It "runs the NUnit tests" {
+            [xml]$NUnitResult = Get-Content (Join-Path $TestSolutionFullPath ".build\output\TestsResults\NUnit.xml")
+            $NUnitResult.'test-run'.total | Should Be 2
+        }
+    }
 }

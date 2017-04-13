@@ -1,4 +1,5 @@
-Import-Script Pask.Test -Package Pask.Test
+Import-Task Test-MSpec -Package Pask.Test
+Import-Script Pask.Test.dotCover, Properties.dotCoverFilters -Package Pask.Test.dotCover
 
 Set-Property MSpecTag -Default ""
 Set-Property MSpecExcludeTag -Default ""
@@ -21,7 +22,15 @@ Task Test-MSpec {
 
         New-Directory $TestsResultsFullPath | Out-Null
 
-        Exec { & "$MSpec" --xml "$MSpecTestsResults" $Include $Exclude --progress $Assemblies }
+        $dotCover = Get-dotCoverExe
+        $dotCoverOutput = Join-Path $TestsResultsFullPath "MSpec.dotCover.Snapshot.dcvr"
+        Remove-ItemSilently $dotCoverOutput
+        $dotCoverScope = Get-dotCoverScope $Assemblies
+
+        $MSpecAssemblies = $Assemblies -join "`"`" `"`""
+        $MSpecArguments = "--xml `"`"$MSpecTestsResults`"`" $Include $Exclude --progress `"`"$MSpecAssemblies`"`""
+
+        Exec { & "$dotCover" cover /TargetExecutable="$MSpec" /TargetArguments="$MSpecArguments" /Output="$dotCoverOutput" /Scope="$dotCoverScope" /Filters="`"$dotCoverFilters`"" /AttributeFilters="`"$dotCoverAttributeFilters`"" /ReturnTargetExitCode }
     } else {
         Write-BuildMessage "MSpec tests not found" -ForegroundColor "Yellow"
     }
