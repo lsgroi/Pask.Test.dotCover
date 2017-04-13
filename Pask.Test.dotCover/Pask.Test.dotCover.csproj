@@ -52,7 +52,6 @@
     <None Include="tasks\Test-NUnit.Tests.ps1" />
     <None Include="tasks\Test-NUnit2.ps1" />
     <None Include="tasks\Test-NUnit2.Tests.ps1" />
-    <None Include="tasks\Test.ps1" />
     <None Include="tasks\Test.Tests.ps1" />
     <None Include="tools\Init.ps1" />
   </ItemGroup>
