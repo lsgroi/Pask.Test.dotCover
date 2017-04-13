@@ -1,4 +1,4 @@
-Import-Task Test-MSpec -Package Pask.Test
+Import-Task Test-NUnit -Package Pask.Test
 Import-Script Pask.Test.dotCover, Properties.dotCoverFilters -Package Pask.Test.dotCover
 
 Set-Property NUnitTestSelection -Default ""
