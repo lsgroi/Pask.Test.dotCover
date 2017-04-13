@@ -44,7 +44,7 @@ function script:Get-dotCoverScope {
 
     # Search scope assemblies in the artifact directory
     if (Test-Path $ArtifactFullPath) {
-        $ScopeSearchFullPath += $ArtifactFullPath
+        $ScopeSearchFullPath += @($ArtifactFullPath)        
     }
 	
     # Search scope assemblies in the tests assemblies directory

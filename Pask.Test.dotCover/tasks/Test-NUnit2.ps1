@@ -25,8 +25,8 @@ Task Test-NUnit2 {
 
         $dotCover = Get-dotCoverExe
         $dotCoverOutput = Join-Path $TestsResultsFullPath "NUnit.dotCover.Snapshot.dcvr"
-        $dotCoverScope = Get-dotCoverScope $Assemblies
         Remove-ItemSilently $dotCoverOutput
+        $dotCoverScope = Get-dotCoverScope $Assemblies
 
         $NUnitAssemblies = $Assemblies -join "`"`" `"`""
         $NUnitArguments = "/work:`"`"$TestsResultsFullPath`"`" /result:`"`"$NUnitTestsResults`"`" /framework:`"`"net-$NUnitFrameworkVersion`"`" $Include $Exclude /nologo `"`"$NUnitAssemblies`"`""
