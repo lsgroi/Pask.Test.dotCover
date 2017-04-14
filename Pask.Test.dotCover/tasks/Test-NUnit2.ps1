@@ -1,10 +1,6 @@
 Import-Task Test-NUnit2 -Package Pask.Test
 Import-Script Pask.Test.dotCover, Properties.dotCoverFilters -Package Pask.Test.dotCover
 
-Set-Property NUnitFrameworkVersion -Default "4.6"
-Set-Property NUnitCategory -Default ""
-Set-Property NUnitExcludeCategory -Default ""
-
 # Synopsis: Run NUnit 2.x tests
 Task Test-NUnit2 {
     $Assemblies = Get-TestAssemblies -TestFrameworkAssemblyName "nunit.framework"

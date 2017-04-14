@@ -1,8 +1,6 @@
 Import-Task Test-NUnit -Package Pask.Test
 Import-Script Pask.Test.dotCover, Properties.dotCoverFilters -Package Pask.Test.dotCover
 
-Set-Property NUnitTestSelection -Default ""
-
 # Synopsis: Run NUnit tests
 Task Test-NUnit {
     $Assemblies = Get-TestAssemblies -TestFrameworkAssemblyName "nunit.framework"

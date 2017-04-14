@@ -1,9 +1,6 @@
 Import-Task Test-MSpec -Package Pask.Test
 Import-Script Pask.Test.dotCover, Properties.dotCoverFilters -Package Pask.Test.dotCover
 
-Set-Property MSpecTag -Default ""
-Set-Property MSpecExcludeTag -Default ""
-
 # Synopsis: Run MSpec tests
 Task Test-MSpec {
     $Assemblies = Get-TestAssemblies -TestFrameworkAssemblyName "Machine.Specifications"
