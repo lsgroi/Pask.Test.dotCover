@@ -34,7 +34,7 @@ Describe "Test-NUnit2" {
     Context "All tests" {
         BeforeAll {
             # Act
-            Invoke-Pask $TestSolutionFullPath -Task Restore-NuGetPackages, Clean, Build, Test-NUnit2, New-dotCoverReport
+            Invoke-Pask $TestSolutionFullPath -Task Restore-NuGetPackages, Clean, Build, Test-NUnit2, New-dotCoverReport -dotCoverReportType "XML"
         }
 
         It "creates the NUnit XML report" {
@@ -177,6 +177,28 @@ Describe "Test-NUnit2" {
             [xml]$NUnitResult = Get-Content (Join-Path $TestSolutionFullPath ".build\output\TestsResults\NUnit.xml")
             $NUnitResult.'test-results'.total | Should Be 3
             $TestCaseName = @('ClassLibrary.UnitTests.Tests.Test_2','ClassLibrary.AcceptanceTests.Tests.Test_3','ClassLibrary.AcceptanceTests.Tests.Test_4')
+            $NUnitResult.'test-results'.'test-suite'.results.'test-suite'.results.'test-suite'.results.'test-suite'.results.'test-suite'.results.'test-case'.name | Should Be $TestCaseName
+        }
+    }
+
+    Context "All tests with code coverage disabled" {
+        BeforeAll {
+            # Act
+            Invoke-Pask $TestSolutionFullPath -Task Restore-NuGetPackages, Clean, Build, Test-NUnit2 -EnableCodeCoverage $false
+        }
+
+        It "creates the NUnit XML report" {
+            Join-Path $TestSolutionFullPath ".build\output\TestsResults\NUnit.xml" | Should Exist
+        }
+
+        It "does not create the NUnit dotCover snapshot" {
+            Join-Path $TestSolutionFullPath ".build\output\TestsResults\NUnit.dotCover.Snapshot.dcvr" | Should Not Exist
+        }
+
+        It "runs all the tests" {
+            [xml]$NUnitResult = Get-Content (Join-Path $TestSolutionFullPath ".build\output\TestsResults\NUnit.xml")
+            $NUnitResult.'test-results'.total | Should Be 4
+            $TestCaseName = @('ClassLibrary.UnitTests.Tests.Test_1','ClassLibrary.UnitTests.Tests.Test_2','ClassLibrary.AcceptanceTests.Tests.Test_3', 'ClassLibrary.AcceptanceTests.Tests.Test_4')
             $NUnitResult.'test-results'.'test-suite'.results.'test-suite'.results.'test-suite'.results.'test-suite'.results.'test-suite'.results.'test-case'.name | Should Be $TestCaseName
         }
     }

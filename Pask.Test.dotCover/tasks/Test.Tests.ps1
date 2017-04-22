@@ -114,4 +114,37 @@ Describe "Test" {
             $NUnitResult.'test-run'.total | Should Be 4
         }
     }
+
+    Context "All tests with code coverage disabled" {
+        BeforeAll {
+            # Act
+            Invoke-Pask $TestSolutionFullPath -Task Restore-NuGetPackages, Clean, Build, Test -EnableCodeCoverage $false
+        }
+
+        It "creates the MSpec XML report" {
+            Join-Path $TestSolutionFullPath ".build\output\TestsResults\MSpec.xml" | Should Exist
+        }
+
+        It "does not create the MSpec dotCover snapshot" {
+            Join-Path $TestSolutionFullPath ".build\output\TestsResults\MSpec.dotCover.Snapshot.dcvr" | Should Not Exist
+        }
+
+        It "creates the NUnit XML report" {
+            Join-Path $TestSolutionFullPath ".build\output\TestsResults\NUnit.xml" | Should Exist
+        }
+
+        It "does not create the NUnit dotCover snapshot" {
+            Join-Path $TestSolutionFullPath ".build\output\TestsResults\NUnit.dotCover.Snapshot.dcvr" | Should Not Exist
+        }
+
+        It "runs all MSpec tests" {
+            [xml]$MSpecResult = Get-Content (Join-Path $TestSolutionFullPath ".build\output\TestsResults\MSpec.xml")
+            $MSpecResult.MSpec.assembly.concern.context | Measure | select -ExpandProperty Count | Should Be 4
+        }
+
+        It "runs all NUnit tests" {
+            [xml]$NUnitResult = Get-Content (Join-Path $TestSolutionFullPath ".build\output\TestsResults\NUnit.xml")
+            $NUnitResult.'test-run'.total | Should Be 4
+        }
+    }
 }

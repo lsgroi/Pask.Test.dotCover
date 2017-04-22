@@ -175,4 +175,25 @@ Describe "Test-NUnit" {
             $NUnitResult."test-run"."test-suite"."test-suite"."test-suite"."test-suite"."test-case".methodname | Should Be 'Test_3'
         }
     }
+
+    Context "All tests with code coverage disabled" {
+        BeforeAll {
+            # Act
+            Invoke-Pask $TestSolutionFullPath -Task Restore-NuGetPackages, Clean, Build, Test-NUnit -EnableCodeCoverage $false
+        }
+
+        It "creates the NUnit XML report" {
+            Join-Path $TestSolutionFullPath ".build\output\TestsResults\NUnit.xml" | Should Exist
+        }
+
+        It "does not create the NUnit dotCover snapshot" {
+            Join-Path $TestSolutionFullPath ".build\output\TestsResults\NUnit.dotCover.Snapshot.dcvr" | Should Not Exist
+        }
+
+        It "runs all the tests" {
+            [xml]$NUnitResult = Get-Content (Join-Path $TestSolutionFullPath ".build\output\TestsResults\NUnit.xml")
+            $NUnitResult.'test-run'.total | Should Be 4
+            $NUnitResult."test-run"."test-suite"."test-suite"."test-suite"."test-suite"."test-case".methodname | Should Be @('Test_1', 'Test_2', 'Test_3', 'Test_4')
+        }
+    }
 }

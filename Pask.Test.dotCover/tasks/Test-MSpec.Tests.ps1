@@ -183,4 +183,27 @@ Describe "Test-MSpec" {
             $MSpecResult.MSpec.assembly.concern.context.name | Where { $_ -eq "ObjectSpec"} | Measure | select -ExpandProperty Count | Should Be 1
         }
     }
+
+    Context "All tests with code coverage disabled" {
+        BeforeAll {
+            # Act
+            Invoke-Pask $TestSolutionFullPath -Task Restore-NuGetPackages, Clean, Build, Test-MSpec -EnableCodeCoverage $false
+        }
+
+        It "creates the MSpec XML report" {
+            Join-Path $TestSolutionFullPath ".build\output\TestsResults\MSpec.xml" | Should Exist
+        }
+
+        It "does not create the MSpec dotCover snapshot" {
+            Join-Path $TestSolutionFullPath ".build\output\TestsResults\MSpec.dotCover.Snapshot.dcvr" | Should Not Exist
+        }
+
+        It "runs all the tests" {
+            [xml]$MSpecResult = Get-Content (Join-Path $TestSolutionFullPath ".build\output\TestsResults\MSpec.xml")
+            $MSpecResult.MSpec.assembly.concern.context | Measure | select -ExpandProperty Count | Should Be 4
+            $MSpecResult.MSpec.assembly.concern.context.name | Where { $_ -eq "StringSpec"} | Measure | select -ExpandProperty Count | Should Be 2
+            $MSpecResult.MSpec.assembly.concern.context.name | Where { $_ -eq "IntSpec"} | Measure | select -ExpandProperty Count | Should Be 1
+            $MSpecResult.MSpec.assembly.concern.context.name | Where { $_ -eq "ObjectSpec"} | Measure | select -ExpandProperty Count | Should Be 1
+        }
+    }
 }

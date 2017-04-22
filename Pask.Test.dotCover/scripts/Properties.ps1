@@ -1,0 +1,1 @@
+﻿Set-Property EnableCodeCoverage -Default $true
