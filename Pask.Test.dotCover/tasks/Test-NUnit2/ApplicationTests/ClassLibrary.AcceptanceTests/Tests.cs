@@ -17,5 +17,11 @@ namespace ClassLibrary.AcceptanceTests
         {
             Assert.True(true);
         }
+
+        [Test]
+        public void Test_5()
+        {
+            Assert.True(new Class().Method_Covered());
+        }
     }
 }

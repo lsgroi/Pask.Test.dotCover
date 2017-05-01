@@ -6,24 +6,29 @@ namespace ClassLibrary
     public class Class
     {
         [ExcludeFromCodeCoverage]
-        public bool Method1()
+        public bool Method_Excluded_From_Code_Coverage()
         {
             return true;
         }
 
         [CustomExcludeFromCodeCoverage]
-        public bool Method2()
+        public bool Method_Excluded_From_Code_Coverage_By_Custom_Attribute()
         {
             return true;
         }
 
-        public bool Method3()
+        public bool Method_Not_Covered()
         {
             return true;
         }
 
         [GeneratedCode("Test", "1")]
-        public bool Method4()
+        public bool Method_Code_Generated_By_Tool()
+        {
+            return true;
+        }
+
+        public bool Method_Covered()
         {
             return true;
         }

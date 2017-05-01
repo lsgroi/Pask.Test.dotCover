@@ -17,8 +17,8 @@
     <copyright>Copyright © 2017 Luca Sgroi under the Apache License</copyright>
     <releaseNotes>https://github.com/lsgroi/Pask.Test.dotCover/releases</releaseNotes>
     <dependencies>
-        <dependency id="JetBrains.dotCover.CommandLineTools" version="2017.1.20170407.131846" />
-        <dependency id="Pask.Test" version="0.4.1" />
+        <dependency id="JetBrains.dotCover.CommandLineTools" version="2017.1.20170428.83814" />
+        <dependency id="Pask.Test" version="0.5" />
     </dependencies>
   </metadata>
   <files>

@@ -10,7 +10,7 @@ if ($EnableCodeCoverage -and $EnableCodeCoverage -eq $true) {
 
         if ($Assemblies) {
             $NUnit = Join-Path (Get-PackageDir "NUnit.Runners") "tools\nunit-console.exe"
-            $NUnitTestsResults = Join-Path $TestsResultsFullPath "NUnit.xml"
+            $NUnitTestResults = Join-Path $TestResultsFullPath "NUnit.xml"
         
             if ($NUnitCategory) { 
                 $Include = "/include:$NUnitCategory"
@@ -20,15 +20,15 @@ if ($EnableCodeCoverage -and $EnableCodeCoverage -eq $true) {
                 $Exclude = "/exclude:$NUnitExcludeCategory"
             }
 
-            New-Directory $TestsResultsFullPath | Out-Null
+            New-Directory $TestResultsFullPath | Out-Null
 
             $dotCover = Get-dotCoverExe
-            $dotCoverOutput = Join-Path $TestsResultsFullPath "NUnit.dotCover.Snapshot.dcvr"
+            $dotCoverOutput = Join-Path $TestResultsFullPath "NUnit.dotCover.Snapshot.dcvr"
             Remove-ItemSilently $dotCoverOutput
             $dotCoverScope = Get-dotCoverScope $Assemblies
 
             $NUnitAssemblies = $Assemblies -join "`"`" `"`""
-            $NUnitArguments = "/work:`"`"$TestsResultsFullPath`"`" /result:`"`"$NUnitTestsResults`"`" /framework:`"`"net-$NUnitFrameworkVersion`"`" $Include $Exclude /nologo `"`"$NUnitAssemblies`"`""
+            $NUnitArguments = "/work:`"`"$TestResultsFullPath`"`" /result:`"`"$NUnitTestResults`"`" /framework:`"`"net-$NUnitFrameworkVersion`"`" $Include $Exclude /nologo `"`"$NUnitAssemblies`"`""
 
             Exec { & "$dotCover" cover /TargetExecutable="$NUnit" /TargetArguments="$NUnitArguments" /Output="$dotCoverOutput" /Scope="$dotCoverScope" /Filters="`"$dotCoverFilters`"" /AttributeFilters="`"$dotCoverAttributeFilters`"" /ReturnTargetExitCode }
 

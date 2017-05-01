@@ -14,20 +14,8 @@ Describe "Test-NUnit" {
             Invoke-Pask (Join-Path $Here "NoTests") -Task Restore-NuGetPackages, Clean, Build, Test-NUnit, New-dotCoverReport
         }
 
-        It "does not create the NUnit XML report" {
-            Join-Path $Here "NoTests\.build\output\TestsResults\NUnit.xml" | Should Not Exist
-        }
-
-        It "does not create the NUnit dotCover snapshot" {
-            Join-Path $Here "NoTests\.build\output\TestsResults\NUnit.dotCover.Snapshot.dcvr" | Should Not Exist
-        }
-
-        It "does not create the merged dotCover snapshot" {
-            Join-Path $Here "NoTests\.build\output\TestsResults\dotCover.Snapshot.dcvr" | Should Not Exist
-        }
-
-        It "does not create the dotCover report" {
-            Join-Path $Here "NoTests\.build\output\TestsResults\dotCover.Report.xml" | Should Not Exist
+        It "does not create any report" {
+            Join-Path $Here "NoTests\.build\output\TestResults\*.*" | Should Not Exist
         }
     }
 
@@ -38,65 +26,67 @@ Describe "Test-NUnit" {
         }
 
         It "creates the NUnit XML report" {
-            Join-Path $TestSolutionFullPath ".build\output\TestsResults\NUnit.xml" | Should Exist
+            Join-Path $TestSolutionFullPath ".build\output\TestResults\NUnit.xml" | Should Exist
         }
 
         It "creates the NUnit dotCover snapshot" {
-            Join-Path $TestSolutionFullPath ".build\output\TestsResults\NUnit.dotCover.Snapshot.dcvr" | Should Exist
+            Join-Path $TestSolutionFullPath ".build\output\TestResults\NUnit.dotCover.Snapshot.dcvr" | Should Exist
         }
 
         It "creates the merged dotCover snapshot" {
-            Join-Path $TestSolutionFullPath ".build\output\TestsResults\dotCover.Snapshot.dcvr" | Should Exist
+            Join-Path $TestSolutionFullPath ".build\output\TestResults\dotCover.Snapshot.dcvr" | Should Exist
         }
 
         It "creates the dotCover report" {
-            $dotCoverReport = Join-Path $TestSolutionFullPath ".build\output\TestsResults\dotCover.Report.xml"
+            $dotCoverReport = Join-Path $TestSolutionFullPath ".build\output\TestResults\dotCover.Report.xml"
             $dotCoverReport | Should Exist
             [xml]$dotCoverReportXml = Get-Content $dotCoverReport
             $Class = $dotCoverReportXml.Root.Assembly.Namespace.Type | Where { $_.Name -eq "Class" }
-            $Class.Method.Count | Should Be 2
-            $Class.Method | Where { $_.Name -eq "Method2():bool" } | Should Not BeNullOrEmpty
-            $Class.Method | Where { $_.Name -eq "Method3():bool" } | Should Not BeNullOrEmpty
+            $Class.Method | Measure | Select -ExpandProperty Count | Should Be 3
+            $Class.Method | Where { $_.Name -eq "Method_Excluded_From_Code_Coverage_By_Custom_Attribute():bool" } | Select -ExpandProperty CoveragePercent -First 1 | Should Be 0
+            $Class.Method | Where { $_.Name -eq "Method_Covered():bool" } | Select -ExpandProperty CoveragePercent -First 1 | Should Be 100
+            $Class.Method | Where { $_.Name -eq "Method_Not_Covered():bool" } | Select -ExpandProperty CoveragePercent -First 1 | Should Be 0
         }
 
         It "runs all the tests" {
-            [xml]$NUnitResult = Get-Content (Join-Path $TestSolutionFullPath ".build\output\TestsResults\NUnit.xml")
-            $NUnitResult.'test-run'.total | Should Be 4
-            $NUnitResult."test-run"."test-suite"."test-suite"."test-suite"."test-suite"."test-case".methodname | Should Be @('Test_1', 'Test_2', 'Test_3', 'Test_4')
+            [xml]$NUnitResult = Get-Content (Join-Path $TestSolutionFullPath ".build\output\TestResults\NUnit.xml")
+            $NUnitResult.'test-run'.total | Should Be 5
+            $NUnitResult."test-run"."test-suite"."test-suite"."test-suite"."test-suite"."test-case".methodname | Should Be @('Test_1', 'Test_2', 'Test_3', 'Test_4', 'Test_5')
         }
     }
 
     Context "All tests with dotCover filters" {
         BeforeAll {
             # Act
-            Invoke-Pask $TestSolutionFullPath -Task Restore-NuGetPackages, Clean, Build, Test-NUnit, New-dotCoverReport -dotCoverReportType "XML" -dotCoverFilters "-:function=Method3"
+            Invoke-Pask $TestSolutionFullPath -Task Restore-NuGetPackages, Clean, Build, Test-NUnit, New-dotCoverReport -dotCoverReportType "XML" -dotCoverFilters "-:function=Method_Not_Covered"
         }
 
         It "creates the NUnit XML report" {
-            Join-Path $TestSolutionFullPath ".build\output\TestsResults\NUnit.xml" | Should Exist
+            Join-Path $TestSolutionFullPath ".build\output\TestResults\NUnit.xml" | Should Exist
         }
 
         It "creates the NUnit dotCover snapshot" {
-            Join-Path $TestSolutionFullPath ".build\output\TestsResults\NUnit.dotCover.Snapshot.dcvr" | Should Exist
+            Join-Path $TestSolutionFullPath ".build\output\TestResults\NUnit.dotCover.Snapshot.dcvr" | Should Exist
         }
 
         It "creates the merged dotCover snapshot" {
-            Join-Path $TestSolutionFullPath ".build\output\TestsResults\dotCover.Snapshot.dcvr" | Should Exist
+            Join-Path $TestSolutionFullPath ".build\output\TestResults\dotCover.Snapshot.dcvr" | Should Exist
         }
 
         It "creates the dotCover report" {
-            $dotCoverReport = Join-Path $TestSolutionFullPath ".build\output\TestsResults\dotCover.Report.xml"
+            $dotCoverReport = Join-Path $TestSolutionFullPath ".build\output\TestResults\dotCover.Report.xml"
             $dotCoverReport | Should Exist
             [xml]$dotCoverReportXml = Get-Content $dotCoverReport
             $Class = $dotCoverReportXml.Root.Assembly.Namespace.Type | Where { $_.Name -eq "Class" }
-            $Class.Method | Measure | Select -ExpandProperty Count | Should Be 1
-            $Class.Method.Name | Should Be "Method2():bool"
+            $Class.Method | Measure | Select -ExpandProperty Count | Should Be 2
+            $Class.Method | Where { $_.Name -eq "Method_Excluded_From_Code_Coverage_By_Custom_Attribute():bool" } | Select -ExpandProperty CoveragePercent -First 1 | Should Be 0
+            $Class.Method | Where { $_.Name -eq "Method_Covered():bool" } | Select -ExpandProperty CoveragePercent -First 1 | Should Be 100
         }
 
         It "runs all the tests" {
-            [xml]$NUnitResult = Get-Content (Join-Path $TestSolutionFullPath ".build\output\TestsResults\NUnit.xml")
-            $NUnitResult.'test-run'.total | Should Be 4
-            $NUnitResult."test-run"."test-suite"."test-suite"."test-suite"."test-suite"."test-case".methodname | Should Be @('Test_1', 'Test_2', 'Test_3', 'Test_4')
+            [xml]$NUnitResult = Get-Content (Join-Path $TestSolutionFullPath ".build\output\TestResults\NUnit.xml")
+            $NUnitResult.'test-run'.total | Should Be 5
+            $NUnitResult."test-run"."test-suite"."test-suite"."test-suite"."test-suite"."test-case".methodname | Should Be @('Test_1', 'Test_2', 'Test_3', 'Test_4', 'Test_5')
         }
     }
 
@@ -107,30 +97,31 @@ Describe "Test-NUnit" {
         }
 
         It "creates the NUnit XML report" {
-            Join-Path $TestSolutionFullPath ".build\output\TestsResults\NUnit.xml" | Should Exist
+            Join-Path $TestSolutionFullPath ".build\output\TestResults\NUnit.xml" | Should Exist
         }
 
         It "creates the NUnit dotCover snapshot" {
-            Join-Path $TestSolutionFullPath ".build\output\TestsResults\NUnit.dotCover.Snapshot.dcvr" | Should Exist
+            Join-Path $TestSolutionFullPath ".build\output\TestResults\NUnit.dotCover.Snapshot.dcvr" | Should Exist
         }
 
         It "creates the merged dotCover snapshot" {
-            Join-Path $TestSolutionFullPath ".build\output\TestsResults\dotCover.Snapshot.dcvr" | Should Exist
+            Join-Path $TestSolutionFullPath ".build\output\TestResults\dotCover.Snapshot.dcvr" | Should Exist
         }
 
         It "creates the dotCover report" {
-            $dotCoverReport = Join-Path $TestSolutionFullPath ".build\output\TestsResults\dotCover.Report.xml"
+            $dotCoverReport = Join-Path $TestSolutionFullPath ".build\output\TestResults\dotCover.Report.xml"
             $dotCoverReport | Should Exist
             [xml]$dotCoverReportXml = Get-Content $dotCoverReport
             $Class = $dotCoverReportXml.Root.Assembly.Namespace.Type | Where { $_.Name -eq "Class" }
-            $Class.Method | Measure | Select -ExpandProperty Count | Should Be 1
-            $Class.Method.Name | Should Be "Method3():bool"
+            $Class.Method | Measure | Select -ExpandProperty Count | Should Be 2
+            $Class.Method | Where { $_.Name -eq "Method_Covered():bool" } | Select -ExpandProperty CoveragePercent -First 1 | Should Be 100
+            $Class.Method | Where { $_.Name -eq "Method_Not_Covered():bool" } | Select -ExpandProperty CoveragePercent -First 1 | Should Be 0
         }
 
         It "runs all the tests" {
-            [xml]$NUnitResult = Get-Content (Join-Path $TestSolutionFullPath ".build\output\TestsResults\NUnit.xml")
-            $NUnitResult.'test-run'.total | Should Be 4
-            $NUnitResult."test-run"."test-suite"."test-suite"."test-suite"."test-suite"."test-case".methodname | Should Be @('Test_1', 'Test_2', 'Test_3', 'Test_4')
+            [xml]$NUnitResult = Get-Content (Join-Path $TestSolutionFullPath ".build\output\TestResults\NUnit.xml")
+            $NUnitResult.'test-run'.total | Should Be 5
+            $NUnitResult."test-run"."test-suite"."test-suite"."test-suite"."test-suite"."test-case".methodname | Should Be @('Test_1', 'Test_2', 'Test_3', 'Test_4', 'Test_5')
         }
     }
 
@@ -141,15 +132,15 @@ Describe "Test-NUnit" {
         }
 
         It "creates the NUnit XML report" {
-            Join-Path $TestSolutionFullPath ".build\output\TestsResults\NUnit.xml" | Should Exist
+            Join-Path $TestSolutionFullPath ".build\output\TestResults\NUnit.xml" | Should Exist
         }
 
         It "creates the NUnit dotCover snapshot" {
-            Join-Path $TestSolutionFullPath ".build\output\TestsResults\NUnit.dotCover.Snapshot.dcvr" | Should Exist
+            Join-Path $TestSolutionFullPath ".build\output\TestResults\NUnit.dotCover.Snapshot.dcvr" | Should Exist
         }
 
         It "runs all the tests with the given category" {
-            [xml]$NUnitResult = Get-Content (Join-Path $TestSolutionFullPath ".build\output\TestsResults\NUnit.xml")
+            [xml]$NUnitResult = Get-Content (Join-Path $TestSolutionFullPath ".build\output\TestResults\NUnit.xml")
             $NUnitResult.'test-run'.total | Should Be 2
             $NUnitResult."test-run"."test-suite"."test-suite"."test-suite"."test-suite"."test-case".methodname | Should Be @('Test_2', 'Test_4')
         }
@@ -162,17 +153,17 @@ Describe "Test-NUnit" {
         }
 
         It "creates the NUnit XML report" {
-            Join-Path $TestSolutionFullPath ".build\output\TestsResults\NUnit.xml" | Should Exist
+            Join-Path $TestSolutionFullPath ".build\output\TestResults\NUnit.xml" | Should Exist
         }
 
         It "creates the NUnit dotCover snapshot" {
-            Join-Path $TestSolutionFullPath ".build\output\TestsResults\NUnit.dotCover.Snapshot.dcvr" | Should Exist
+            Join-Path $TestSolutionFullPath ".build\output\TestResults\NUnit.dotCover.Snapshot.dcvr" | Should Exist
         }
 
         It "runs all the tests without the given categories" {
-            [xml]$NUnitResult = Get-Content (Join-Path $TestSolutionFullPath ".build\output\TestsResults\NUnit.xml")
-            $NUnitResult.'test-run'.total | Should Be 1
-            $NUnitResult."test-run"."test-suite"."test-suite"."test-suite"."test-suite"."test-case".methodname | Should Be 'Test_3'
+            [xml]$NUnitResult = Get-Content (Join-Path $TestSolutionFullPath ".build\output\TestResults\NUnit.xml")
+            $NUnitResult.'test-run'.total | Should Be 2
+            $NUnitResult."test-run"."test-suite"."test-suite"."test-suite"."test-suite"."test-case".methodname | Should Be @('Test_3', 'Test_5')
         }
     }
 
@@ -183,17 +174,17 @@ Describe "Test-NUnit" {
         }
 
         It "creates the NUnit XML report" {
-            Join-Path $TestSolutionFullPath ".build\output\TestsResults\NUnit.xml" | Should Exist
+            Join-Path $TestSolutionFullPath ".build\output\TestResults\NUnit.xml" | Should Exist
         }
 
         It "does not create the NUnit dotCover snapshot" {
-            Join-Path $TestSolutionFullPath ".build\output\TestsResults\NUnit.dotCover.Snapshot.dcvr" | Should Not Exist
+            Join-Path $TestSolutionFullPath ".build\output\TestResults\NUnit.dotCover.Snapshot.dcvr" | Should Not Exist
         }
 
         It "runs all the tests" {
-            [xml]$NUnitResult = Get-Content (Join-Path $TestSolutionFullPath ".build\output\TestsResults\NUnit.xml")
-            $NUnitResult.'test-run'.total | Should Be 4
-            $NUnitResult."test-run"."test-suite"."test-suite"."test-suite"."test-suite"."test-case".methodname | Should Be @('Test_1', 'Test_2', 'Test_3', 'Test_4')
+            [xml]$NUnitResult = Get-Content (Join-Path $TestSolutionFullPath ".build\output\TestResults\NUnit.xml")
+            $NUnitResult.'test-run'.total | Should Be 5
+            $NUnitResult."test-run"."test-suite"."test-suite"."test-suite"."test-suite"."test-case".methodname | Should Be @('Test_1', 'Test_2', 'Test_3', 'Test_4', 'Test_5')
         }
     }
 }

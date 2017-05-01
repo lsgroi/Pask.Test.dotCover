@@ -14,4 +14,16 @@ namespace ClassLibrary.AcceptanceTests
 
         Establish context = () => { };
     }
+
+    [Subject(typeof(Class))]
+    public class ClassSpec : WithSubject<Class>
+    {
+        It should_be_true = () => result.ShouldBeTrue();
+
+        Because of = () => result = Subject.Method_Covered();
+
+        Establish context = () => { };
+
+        static bool result;
+    }
 }

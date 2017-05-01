@@ -10,7 +10,7 @@ if ($EnableCodeCoverage -and $EnableCodeCoverage -eq $true) {
 
         if ($Assemblies) {
             $MSpec = Join-Path (Get-PackageDir "Machine.Specifications.Runner.Console") "tools\mspec-clr4.exe"
-            $MSpecTestsResults = Join-Path $TestsResultsFullPath "MSpec.xml"
+            $MSpecTestResults = Join-Path $TestResultsFullPath "MSpec.xml"
         
             if ($MSpecTag) { 
                 $Include = @("--include", $MSpecTag) 
@@ -20,15 +20,15 @@ if ($EnableCodeCoverage -and $EnableCodeCoverage -eq $true) {
                 $Exclude = @("--exclude", $MSpecExcludeTag)
             }
 
-            New-Directory $TestsResultsFullPath | Out-Null
+            New-Directory $TestResultsFullPath | Out-Null
 
             $dotCover = Get-dotCoverExe
-            $dotCoverOutput = Join-Path $TestsResultsFullPath "MSpec.dotCover.Snapshot.dcvr"
+            $dotCoverOutput = Join-Path $TestResultsFullPath "MSpec.dotCover.Snapshot.dcvr"
             Remove-ItemSilently $dotCoverOutput
             $dotCoverScope = Get-dotCoverScope $Assemblies
 
             $MSpecAssemblies = $Assemblies -join "`"`" `"`""
-            $MSpecArguments = "--xml `"`"$MSpecTestsResults`"`" $Include $Exclude --progress `"`"$MSpecAssemblies`"`""
+            $MSpecArguments = "--xml `"`"$MSpecTestResults`"`" $Include $Exclude --progress `"`"$MSpecAssemblies`"`""
 
             Exec { & "$dotCover" cover /TargetExecutable="$MSpec" /TargetArguments="$MSpecArguments" /Output="$dotCoverOutput" /Scope="$dotCoverScope" /Filters="`"$dotCoverFilters`"" /AttributeFilters="`"$dotCoverAttributeFilters`"" /ReturnTargetExitCode }
         } else {

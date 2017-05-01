@@ -3,28 +3,28 @@ Set-Property dotCoverReportType -Default @("HTML","XML")
 
 # Synopsis: Merge dotCover snapshots found in the tests results directory and generate a report
 Task New-dotCoverReport {
-    if (-not $TestsResultsFullPath -or -not (Test-Path $TestsResultsFullPath)) {
+    if (-not $TestResultsFullPath -or -not (Test-Path $TestResultsFullPath)) {
         Write-BuildMessage "tests results directory not found" -ForegroundColor "Yellow"
         return;
     }
 
-    $MergedSnapshot = Join-Path $TestsResultsFullPath "dotCover.Snapshot.dcvr"
+    $MergedSnapshot = Join-Path $TestResultsFullPath "dotCover.Snapshot.dcvr"
     if (Test-Path $MergedSnapshot) {
         # If the merged snapshot already exists, remove it
         Remove-ItemSilently $MergedSnapshot
     }
 
-    $Snapshots = Get-ChildItem $TestsResultsFullPath -Filter "*.dcvr" | Select -ExpandProperty FullName
+    $Snapshots = Get-ChildItem $TestResultsFullPath -Filter "*.dcvr" | Select -ExpandProperty FullName
 
     if($Snapshots) {
         "`r`nMerge dotCover Snapshots"
         $dotCover = Get-dotCoverExe
         $Source = $Snapshots -join ';'
 		Exec { & "$dotCover" merge /Source="$Source" /Output="$MergedSnapshot" }
-        Get-ChildItem $TestsResultsFullPath | Where { $_.BaseName.StartsWith($dotCoverReportName) } | ForEach { Remove-ItemSilently $_.FullName }
+        Get-ChildItem $TestResultsFullPath | Where { $_.BaseName.StartsWith($dotCoverReportName) } | ForEach { Remove-ItemSilently $_.FullName }
         $dotCoverReportType | ForEach {
             $dotCoverReportExtension = if ($_ -eq "NDependXML") { "xml" } else { $_.ToLower() }
-            $dotCoverReport = Join-Path $TestsResultsFullPath "$dotCoverReportName.$dotCoverReportExtension"
+            $dotCoverReport = Join-Path $TestResultsFullPath "$dotCoverReportName.$dotCoverReportExtension"
             "`r`nGenerate dotCover $_ Report"
 		    Exec { & "$dotCover" report /Source="$MergedSnapshot" /Output="$dotCoverReport" /ReportType="$_" }
         }
