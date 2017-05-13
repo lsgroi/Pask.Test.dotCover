@@ -29,7 +29,7 @@ if ($EnableCodeCoverage -and $EnableCodeCoverage -eq $true) {
 
             $dotCover = Get-dotCoverExe
             $dotCoverOutput = Join-Path $TestResultsFullPath "VSTest.dotCover.Snapshot.dcvr"
-            Remove-ItemSilently $dotCoverOutput
+            Remove-PaskItem $dotCoverOutput
             $dotCoverScope = Get-dotCoverScope $Assemblies
 
             $VSTestAssemblies = $Assemblies -join "`"`" `"`""
@@ -40,7 +40,7 @@ if ($EnableCodeCoverage -and $EnableCodeCoverage -eq $true) {
             $VSTestResultsFullPath = Join-Path $TestResultsFullPath "TestResults"
             if (Test-Path $VSTestResultsFullPath) {
                 Move-Item -Path (Join-Path $VSTestResultsFullPath "*") $TestResultsFullPath
-                Remove-ItemSilently $VSTestResultsFullPath
+                Remove-PaskItem $VSTestResultsFullPath
             }
         } else {
             Write-BuildMessage "Tests not found" -ForegroundColor "Yellow"

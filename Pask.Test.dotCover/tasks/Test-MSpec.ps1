@@ -24,7 +24,7 @@ if ($EnableCodeCoverage -and $EnableCodeCoverage -eq $true) {
 
             $dotCover = Get-dotCoverExe
             $dotCoverOutput = Join-Path $TestResultsFullPath "MSpec.dotCover.Snapshot.dcvr"
-            Remove-ItemSilently $dotCoverOutput
+            Remove-PaskItem $dotCoverOutput
             $dotCoverScope = Get-dotCoverScope $Assemblies
 
             $MSpecAssemblies = $Assemblies -join "`"`" `"`""

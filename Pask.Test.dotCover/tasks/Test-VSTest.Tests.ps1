@@ -66,7 +66,14 @@ Describe "Test-VSTest" {
         BeforeAll {
             # Act
             Invoke-Pask $TestSolutionFullPath -Task Restore-NuGetPackages, Clean, Build, New-Artifact, New-TestsArtifact
-            (Join-Path $TestSolutionFullPath "**\bin"), (Join-Path $TestSolutionFullPath "**\obj") | Remove-ItemSilently
+            Remove-PaskItem (Join-Path $TestSolutionFullPath "ClassLibrary\bin")
+            Remove-PaskItem (Join-Path $TestSolutionFullPath "ClassLibrary\obj")
+            Remove-PaskItem (Join-Path $TestSolutionFullPath "ClassLibrary.UnitTests\bin")
+            Remove-PaskItem (Join-Path $TestSolutionFullPath "ClassLibrary.UnitTests\obj")
+            Remove-PaskItem (Join-Path $TestSolutionFullPath "ApplicationTests\ClassLibrary.AcceptanceTests\bin")
+            Remove-PaskItem (Join-Path $TestSolutionFullPath "ApplicationTests\ClassLibrary.AcceptanceTests\obj")
+            Remove-PaskItem (Join-Path $TestSolutionFullPath "ApplicationTests\ClassLibrary.IntegrationTests\bin")
+            Remove-PaskItem (Join-Path $TestSolutionFullPath "ApplicationTests\ClassLibrary.IntegrationTests\obj")
             Invoke-Pask $TestSolutionFullPath -Task Test-VSTest, New-dotCoverReport -dotCoverReportType "XML"
         }
 

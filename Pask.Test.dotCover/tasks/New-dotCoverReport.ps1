@@ -11,7 +11,7 @@ Task New-dotCoverReport {
     $MergedSnapshot = Join-Path $TestResultsFullPath "dotCover.Snapshot.dcvr"
     if (Test-Path $MergedSnapshot) {
         # If the merged snapshot already exists, remove it
-        Remove-ItemSilently $MergedSnapshot
+        Remove-PaskItem $MergedSnapshot
     }
 
     $Snapshots = Get-ChildItem $TestResultsFullPath -Filter "*.dcvr" | Select -ExpandProperty FullName
@@ -21,7 +21,7 @@ Task New-dotCoverReport {
         $dotCover = Get-dotCoverExe
         $Source = $Snapshots -join ';'
 		Exec { & "$dotCover" merge /Source="$Source" /Output="$MergedSnapshot" }
-        Get-ChildItem $TestResultsFullPath | Where { $_.BaseName.StartsWith($dotCoverReportName) } | ForEach { Remove-ItemSilently $_.FullName }
+        Get-ChildItem $TestResultsFullPath | Where { $_.BaseName.StartsWith($dotCoverReportName) } | ForEach { Remove-PaskItem $_.FullName }
         $dotCoverReportType | ForEach {
             $dotCoverReportExtension = if ($_ -eq "NDependXML") { "xml" } else { $_.ToLower() }
             $dotCoverReport = Join-Path $TestResultsFullPath "$dotCoverReportName.$dotCoverReportExtension"
