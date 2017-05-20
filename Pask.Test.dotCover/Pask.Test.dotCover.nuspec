@@ -18,7 +18,7 @@
     <releaseNotes>https://github.com/lsgroi/Pask.Test.dotCover/releases</releaseNotes>
     <dependencies>
         <dependency id="JetBrains.dotCover.CommandLineTools" version="2017.1.20170428.83814" />
-        <dependency id="Pask.Test" version="0.6.0" />
+        <dependency id="Pask.Test" version="0.8.0" />
     </dependencies>
   </metadata>
   <files>

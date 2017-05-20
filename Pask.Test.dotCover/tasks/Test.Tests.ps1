@@ -70,7 +70,7 @@ Describe "Test" {
 
     Context "All tests from tests artifact" {
         BeforeAll {
-            # Act
+            # Arrange
             Invoke-Pask $TestSolutionFullPath -Task Restore-NuGetPackages, Clean, Build, New-Artifact, New-TestsArtifact
             Remove-PaskItem (Join-Path $TestSolutionFullPath "ClassLibrary\bin")
             Remove-PaskItem (Join-Path $TestSolutionFullPath "ClassLibrary\obj")
@@ -80,7 +80,9 @@ Describe "Test" {
             Remove-PaskItem (Join-Path $TestSolutionFullPath "ApplicationTests\ClassLibrary.AcceptanceTests\obj")
             Remove-PaskItem (Join-Path $TestSolutionFullPath "ApplicationTests\ClassLibrary.IntegrationTests\bin")
             Remove-PaskItem (Join-Path $TestSolutionFullPath "ApplicationTests\ClassLibrary.IntegrationTests\obj")
-            Invoke-Pask $TestSolutionFullPath -Task Test, New-dotCoverReport -dotCoverReportType "XML"
+            
+            # Act
+            Invoke-Pask $TestSolutionFullPath -Task TestFrom-TestsArtifact, New-dotCoverReport -dotCoverReportType "XML"
         }
 
         It "creates the MSpec XML report" {
