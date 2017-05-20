@@ -53,7 +53,7 @@ function script:Get-dotCoverScope {
     # Return filtered list of assemblies in scope
     return ($ScopeSearchFullPath | Get-ChildItem -Recurse -File -Include @("*.dll","*.exe") `
             | Where { $_.BaseName -notmatch  $TestNamePattern } `
-            | Where { $Packages -notcontains $_.BaseName } `
+            | Where { $PackageBaseName -notcontains $_.BaseName } `
             | Where { (Split-Path (Split-Path $_.FullName) -Leaf) -ne "roslyn" } `
             | Sort -Property BaseName -Unique `
             | Select -ExpandProperty FullName) -Join ";"
