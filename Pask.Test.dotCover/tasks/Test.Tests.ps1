@@ -4,7 +4,7 @@ Import-Script Pask.Tests.Infrastructure
 Describe "Test" {
     BeforeAll {
         # Arrange
-        $TestSolutionFullPath = Join-Path $Here "Test"
+        $TestSolutionFullPath = Join-Path $Here "Test-VSTest"
         Install-NuGetPackage -Name Pask.Test.dotCover
     }
 
@@ -14,8 +14,15 @@ Describe "Test" {
             Invoke-Pask (Join-Path $Here "NoTests") -Task Restore-NuGetPackages, Clean, Build, Test, New-dotCoverReport
         }
 
-        It "does not create any report" {
-            Join-Path $Here "NoTests\.build\output\TestResults\*.*" | Should Not Exist
+        It "does not create the TRX test report" {
+            Join-Path $Here "NoTests\.build\output\TestResults\*.trx" | Should Not Exist
+        }
+
+        It "creates empty dotCover report" {
+            $dotCoverReport = Join-Path $Here "NoTests\.build\output\TestResults\dotCover.Report.xml"
+            $dotCoverReport | Should Exist
+            [xml]$dotCoverReportXml = Get-Content $dotCoverReport
+            $dotCoverReportXml.Root.TotalStatements | Should Be 0
         }
     }
 
@@ -25,20 +32,12 @@ Describe "Test" {
             Invoke-Pask $TestSolutionFullPath -Task Restore-NuGetPackages, Clean, Build, Test, New-dotCoverReport -dotCoverReportType "XML"
         }
 
-        It "creates the MSpec XML report" {
-            Join-Path $TestSolutionFullPath ".build\output\TestResults\MSpec.xml" | Should Exist
+        It "creates the TRX test report" {
+            Join-Path $TestSolutionFullPath ".build\output\TestResults\*.trx" | Should Exist
         }
 
-        It "creates the MSpec dotCover snapshot" {
-            Join-Path $TestSolutionFullPath ".build\output\TestResults\MSpec.dotCover.Snapshot.dcvr" | Should Exist
-        }
-
-        It "creates the NUnit XML report" {
-            Join-Path $TestSolutionFullPath ".build\output\TestResults\NUnit.xml" | Should Exist
-        }
-
-        It "creates the NUnit dotCover snapshot" {
-            Join-Path $TestSolutionFullPath ".build\output\TestResults\NUnit.dotCover.Snapshot.dcvr" | Should Exist
+        It "creates the VSTest dotCover snapshot" {
+            Join-Path $TestSolutionFullPath ".build\output\TestResults\VSTest.dotCover.Snapshot.dcvr" | Should Exist
         }
 
         It "creates the merged dotCover snapshot" {
@@ -57,14 +56,9 @@ Describe "Test" {
             $Class.Method | Where { $_.Name -eq "Method_Not_Covered():bool" } | Select -ExpandProperty CoveragePercent -First 1 | Should Be 0
         }
 
-        It "runs all MSpec tests" {
-            [xml]$MSpecResult = Get-Content (Join-Path $TestSolutionFullPath ".build\output\TestResults\MSpec.xml")
-            $MSpecResult.MSpec.assembly.concern.context | Measure | select -ExpandProperty Count | Should Be 5
-        }
-
-        It "runs all NUnit tests" {
-            [xml]$NUnitResult = Get-Content (Join-Path $TestSolutionFullPath ".build\output\TestResults\NUnit.xml")
-            $NUnitResult.'test-run'.total | Should Be 4
+        It "runs all the tests" {
+            [xml]$TestResult = Get-Content -Path (Get-Item -Path (Join-Path $TestSolutionFullPath ".build\output\TestResults\*.trx")).FullName
+            $TestResult.TestRun.ResultSummary.Counters.passed | Should Be 9
         }
     }
 
@@ -85,20 +79,12 @@ Describe "Test" {
             Invoke-Pask $TestSolutionFullPath -Task TestFrom-TestsArtifact, New-dotCoverReport -dotCoverReportType "XML"
         }
 
-        It "creates the MSpec XML report" {
-            Join-Path $TestSolutionFullPath ".build\output\TestResults\MSpec.xml" | Should Exist
+        It "creates the TRX test report" {
+            Join-Path $TestSolutionFullPath ".build\output\TestResults\*.trx" | Should Exist
         }
 
-        It "creates the MSpec dotCover snapshot" {
-            Join-Path $TestSolutionFullPath ".build\output\TestResults\MSpec.dotCover.Snapshot.dcvr" | Should Exist
-        }
-
-        It "creates the NUnit XML report" {
-            Join-Path $TestSolutionFullPath ".build\output\TestResults\NUnit.xml" | Should Exist
-        }
-
-        It "creates the NUnit dotCover snapshot" {
-            Join-Path $TestSolutionFullPath ".build\output\TestResults\NUnit.dotCover.Snapshot.dcvr" | Should Exist
+        It "creates the VSTest dotCover snapshot" {
+            Join-Path $TestSolutionFullPath ".build\output\TestResults\VSTest.dotCover.Snapshot.dcvr" | Should Exist
         }
 
         It "creates the merged dotCover snapshot" {
@@ -117,14 +103,9 @@ Describe "Test" {
             $Class.Method | Where { $_.Name -eq "Method_Not_Covered():bool" } | Select -ExpandProperty CoveragePercent -First 1 | Should Be 0
         }
 
-        It "runs all MSpec tests" {
-            [xml]$MSpecResult = Get-Content (Join-Path $TestSolutionFullPath ".build\output\TestResults\MSpec.xml")
-            $MSpecResult.MSpec.assembly.concern.context | Measure | select -ExpandProperty Count | Should Be 5
-        }
-
-        It "runs all NUnit tests" {
-            [xml]$NUnitResult = Get-Content (Join-Path $TestSolutionFullPath ".build\output\TestResults\NUnit.xml")
-            $NUnitResult.'test-run'.total | Should Be 4
+        It "runs all the tests" {
+            [xml]$TestResult = Get-Content -Path (Get-Item -Path (Join-Path $TestSolutionFullPath ".build\output\TestResults\*.trx")).FullName
+            $TestResult.TestRun.ResultSummary.Counters.passed | Should Be 9
         }
     }
 
@@ -134,30 +115,17 @@ Describe "Test" {
             Invoke-Pask $TestSolutionFullPath -Task Restore-NuGetPackages, Clean, Build, Test -EnableCodeCoverage $false
         }
 
-        It "creates the MSpec XML report" {
-            Join-Path $TestSolutionFullPath ".build\output\TestResults\MSpec.xml" | Should Exist
+        It "creates the TRX test report" {
+            Join-Path $TestSolutionFullPath ".build\output\TestResults\*.trx" | Should Exist
         }
 
-        It "does not create the MSpec dotCover snapshot" {
-            Join-Path $TestSolutionFullPath ".build\output\TestResults\MSpec.dotCover.Snapshot.dcvr" | Should Not Exist
+        It "does not create any dotCover snapshot" {
+            Join-Path $TestSolutionFullPath ".build\output\TestResults\*.dcvr" | Should Not Exist
         }
 
-        It "creates the NUnit XML report" {
-            Join-Path $TestSolutionFullPath ".build\output\TestResults\NUnit.xml" | Should Exist
-        }
-
-        It "does not create the NUnit dotCover snapshot" {
-            Join-Path $TestSolutionFullPath ".build\output\TestResults\NUnit.dotCover.Snapshot.dcvr" | Should Not Exist
-        }
-
-        It "runs all MSpec tests" {
-            [xml]$MSpecResult = Get-Content (Join-Path $TestSolutionFullPath ".build\output\TestResults\MSpec.xml")
-            $MSpecResult.MSpec.assembly.concern.context | Measure | select -ExpandProperty Count | Should Be 5
-        }
-
-        It "runs all NUnit tests" {
-            [xml]$NUnitResult = Get-Content (Join-Path $TestSolutionFullPath ".build\output\TestResults\NUnit.xml")
-            $NUnitResult.'test-run'.total | Should Be 4
+        It "runs all the tests" {
+            [xml]$TestResult = Get-Content -Path (Get-Item -Path (Join-Path $TestSolutionFullPath ".build\output\TestResults\*.trx")).FullName
+            $TestResult.TestRun.ResultSummary.Counters.passed | Should Be 9
         }
     }
 }

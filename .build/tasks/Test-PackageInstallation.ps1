@@ -9,5 +9,5 @@ Task Test-PackageInstallation Clean, Pack-Nuspec, Push-Local, {
         Assert ((([xml](Get-Content (Join-Path $SolutionFullPath "Application\packages.config"))).packages.package | Where { $_.id -eq "JetBrains.dotCover.CommandLineTools" }).version -eq $dotCoverVersion) "Incorrect version of JetBrains.dotCover.CommandLineTools installed into project 'Application'"
     }
 
-    Test-PackageInstallation -Name Pask.Test.dotCover -Assertion $Assertion -InstallationTargetInfo "Install into 'Application' project"
+    Test-PackageInstallation -Name Pask.Test.dotCover -Assertion $Assertion -InstallationTargetProject "Application"
 }
