@@ -28,17 +28,7 @@ namespace ClassLibrary
             return true;
         }
 
-        public bool Method_Covered_By_MSpec()
-        {
-            return true;
-        }
-
-        public bool Method_Covered_By_NUnit()
-        {
-            return true;
-        }
-
-        public bool Method_Covered_By_xUnit()
+        public bool Method_Covered()
         {
             return true;
         }

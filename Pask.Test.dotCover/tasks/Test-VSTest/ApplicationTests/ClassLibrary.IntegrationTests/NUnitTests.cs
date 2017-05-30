@@ -3,7 +3,7 @@
 namespace ClassLibrary.IntegrationTests
 {
     [TestFixture]
-    public class Tests
+    public class NUnitTests
     {
         [Test]
         public void Test_3()

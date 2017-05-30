@@ -49,16 +49,17 @@ Describe "Test-VSTest" {
             $dotCoverReport | Should Exist
             [xml]$dotCoverReportXml = Get-Content $dotCoverReport
             $Class = $dotCoverReportXml.Root.Assembly.Namespace.Type | Where { $_.Name -eq "Class" }
-            $Class.Method | Measure | Select -ExpandProperty Count | Should Be 4
+            $Class.Method | Measure | Select -ExpandProperty Count | Should Be 5
             $Class.Method | Where { $_.Name -eq "Method_Excluded_From_Code_Coverage_By_Custom_Attribute():bool" } | Select -ExpandProperty CoveragePercent -First 1 | Should Be 0
             $Class.Method | Where { $_.Name -eq "Method_Covered_By_MSpec():bool" } | Select -ExpandProperty CoveragePercent -First 1 | Should Be 100
             $Class.Method | Where { $_.Name -eq "Method_Covered_By_NUnit():bool" } | Select -ExpandProperty CoveragePercent -First 1 | Should Be 100
+            $Class.Method | Where { $_.Name -eq "Method_Covered_By_xUnit():bool" } | Select -ExpandProperty CoveragePercent -First 1 | Should Be 100
             $Class.Method | Where { $_.Name -eq "Method_Not_Covered():bool" } | Select -ExpandProperty CoveragePercent -First 1 | Should Be 0
         }
 
         It "runs all the tests" {
             [xml]$TestResult = Get-Content -Path (Get-Item -Path (Join-Path $TestSolutionFullPath ".build\output\TestResults\*.trx")).FullName
-            $TestResult.TestRun.ResultSummary.Counters.passed | Should Be 9
+            $TestResult.TestRun.ResultSummary.Counters.passed | Should Be 13
         }
     }
 
@@ -96,16 +97,17 @@ Describe "Test-VSTest" {
             $dotCoverReport | Should Exist
             [xml]$dotCoverReportXml = Get-Content $dotCoverReport
             $Class = $dotCoverReportXml.Root.Assembly.Namespace.Type | Where { $_.Name -eq "Class" }
-            $Class.Method | Measure | Select -ExpandProperty Count | Should Be 4
+            $Class.Method | Measure | Select -ExpandProperty Count | Should Be 5
             $Class.Method | Where { $_.Name -eq "Method_Excluded_From_Code_Coverage_By_Custom_Attribute():bool" } | Select -ExpandProperty CoveragePercent -First 1 | Should Be 0
             $Class.Method | Where { $_.Name -eq "Method_Covered_By_MSpec():bool" } | Select -ExpandProperty CoveragePercent -First 1 | Should Be 100
             $Class.Method | Where { $_.Name -eq "Method_Covered_By_NUnit():bool" } | Select -ExpandProperty CoveragePercent -First 1 | Should Be 100
+            $Class.Method | Where { $_.Name -eq "Method_Covered_By_xUnit():bool" } | Select -ExpandProperty CoveragePercent -First 1 | Should Be 100
             $Class.Method | Where { $_.Name -eq "Method_Not_Covered():bool" } | Select -ExpandProperty CoveragePercent -First 1 | Should Be 0
         }
 
         It "runs all the tests" {
             [xml]$TestResult = Get-Content -Path (Get-Item -Path (Join-Path $TestSolutionFullPath ".build\output\TestResults\*.trx")).FullName
-            $TestResult.TestRun.ResultSummary.Counters.passed | Should Be 9
+            $TestResult.TestRun.ResultSummary.Counters.passed | Should Be 13
         }
     }
 
@@ -125,7 +127,7 @@ Describe "Test-VSTest" {
 
         It "runs all the tests" {
             [xml]$TestResult = Get-Content -Path (Get-Item -Path (Join-Path $TestSolutionFullPath ".build\output\TestResults\*.trx")).FullName
-            $TestResult.TestRun.ResultSummary.Counters.passed | Should Be 9
+            $TestResult.TestRun.ResultSummary.Counters.passed | Should Be 13
         }
     }
 }
