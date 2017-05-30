@@ -47,6 +47,8 @@
     <None Include="scripts\Pask.Test.dotCover.ps1" />
     <None Include="scripts\Properties.dotCoverFilters.ps1" />
     <None Include="tasks\New-dotCoverReport.ps1" />
+    <None Include="tasks\Test-xUnit.Tests.ps1" />
+    <None Include="tasks\Test-xUnit.ps1" />
     <None Include="tasks\Test-VSTest.Tests.ps1" />
     <None Include="tasks\Test-VSTest.ps1" />
     <None Include="tasks\Test-MSpec.ps1" />
